@@ -1,4 +1,3 @@
-using JSON
 import BigArrays: get_config_dict
 
 export GSDict, get_config_dict
@@ -7,29 +6,54 @@ const DEFAULT_CREDENTIAL_FILENAME = "~/.google_credentials.json"
 const DEFAULT_SESSION = GoogleSession(expanduser(DEFAULT_CREDENTIAL_FILENAME), ["devstorage.full_control"])
 const DEFAULT_CONFIG_FILENAME = "config.json"
 
-GSDict = KeyStore
+immutable GSDict <: Associative
+    kvStore     ::KeyStore
+    bucketName  ::String
+    keyPrefix   ::String
+end
 
-function GSDict( bucketName::String )
+"""
+    split gs path to bucket name and key
+"""
+function splitgs( path::String )
+    path = replace(path, "gs://", "")
+    bucketName, key = split(path, "/", limit=2)
+    return String(bucketName), String(key)
+end
+
+function GSDict( path::String )
+    bucketName, keyPrefix = splitgs(path)
+
     bucketName = replace(bucketName, "gs://", "")
-    if bucketName[end]=="/"
-        bucketName = bucketName[1:end-1]
-    end
-    @assert !contains(bucketName, "/")
+    keyPrefix = keyPrefix[end]=="/" ? keyPrefix[1:end-1] : keyPrefix
 
-    KeyStore{Symbol, Vector{UInt8}}(
+    kvStore = KeyStore{String, Vector{UInt8}}(
         bucketName;                                  # Key-value store name. Created if it doesn't already exist.
         session     = DEFAULT_SESSION,
         val_writer  = serialize_to_uint8_vector,    # Function for serializing data before writing to the store
         val_reader  = deserialize_from_vector,      # Function for deserializing data before reading from the store
         use_remote  = true,                         # Defaults to true. Commit every write to the remote store.
         use_cache   = false,                         # Defaults to true. Commit every write to the local store.
-        reset       = false,                         # Defaults to false. Empty the bucket if it exists.
+        empty       = false,                         # Defaults to false. Empty the bucket if it exists.
         gzip        = false
     )
+    GSDict( kvStore, bucketName, keyPrefix )
+end
+
+function Base.delete!( d::GSDict, key::String )
+    delete!( d.kvStore, joinpath(d.keyPrefix, key) )
+end
+
+function Base.setindex!( d::GSDict, value::Any, key::String )
+    d.kvStore[joinpath(d.keyPrefix, key)] = value
+end
+
+function Base.getindex( d::GSDict, key::String)
+    d.kvStore[joinpath(d.keyPrefix, key)]
 end
 
 function get_config_dict( d::GSDict )
-    str = gsread( "gs://$(d.bucket_name)/$(DEFAULT_CONFIG_FILENAME)" )
+    str = gsread( "gs://$(d.bucketName)/$(d.key)/$(DEFAULT_CONFIG_FILENAME)" )
     JSON.parse( str, dicttype=Dict{Symbol, Any} )
 end
 
