@@ -58,12 +58,20 @@ function Base.getindex( d::GSDict, key::String)
 end
 
 function Base.keys( d::GSDict )
-    keyList = keys( d.kvStore )
-    for i in eachindex(keyList)
-        keyList[i] = joinpath(d.keyPrefix, keyList[i])
+    # keyList = keys( d.kvStore )
+    # for i in eachindex(keyList)
+    #     keyList[i] = joinpath(d.keyPrefix, keyList[i])
+    # end
+    # @show keyList
+    ds = storage(:Object, :list, d.bucketName; prefix=d.keyPrefix, fields="items(name)")
+    ret = Vector{String}()
+    for i in eachindex(ds)
+        if !contains( ds[i][:name], DEFAULT_CONFIG_FILENAME)
+            ds[i][:name] = replace(ds[i][:name], "$(d.keyPrefix)/", "" )
+            push!(ret, ds[i][:name])
+        end
     end
-    @show keyList
-    return keyList
+    return ret
 end
 
 function get_config_dict( d::GSDict )
