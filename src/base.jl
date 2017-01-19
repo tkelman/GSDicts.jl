@@ -4,13 +4,13 @@ export GSDict, get_config_dict
 
 const DEFAULT_CREDENTIAL_FILENAME = "~/.google_credentials.json"
 # const DEFAULT_CREDENTIAL = GoogleCredentials(expanduser("~/credentials.json"))
-const DEFAULT_SESSION = GoogleSession(expanduser(DEFAULT_CREDENTIAL_FILENAME), ["devstorage.full_control"])
 const DEFAULT_CONFIG_FILENAME = "config.json"
 
 immutable GSDict <: Associative
-    kvStore     ::KeyStore
-    bucketName  ::String
-    keyPrefix   ::String
+    kvStore     	::KeyStore
+    bucketName  	::String
+    keyPrefix   	::String
+	googleSession	::GoogleCloud.session.GoogleSession 
 end
 
 """
@@ -28,9 +28,10 @@ function GSDict( path::String )
     bucketName = replace(bucketName, "gs://", "")
     keyPrefix = keyPrefix[end]=="/" ? keyPrefix[1:end-1] : keyPrefix
 
+    googleSession = GoogleSession(expanduser(DEFAULT_CREDENTIAL_FILENAME), ["devstorage.full_control"])
     kvStore = KeyStore{String, Vector{UInt8}}(
         bucketName;                                  # Key-value store name. Created if it doesn't already exist.
-        session     = DEFAULT_SESSION,
+        session     = googleSession,
         val_writer  = serialize_to_uint8_vector,    # Function for serializing data before writing to the store
         val_reader  = deserialize_from_vector,      # Function for deserializing data before reading from the store
         use_remote  = true,                         # Defaults to true. Commit every write to the remote store.
@@ -38,22 +39,23 @@ function GSDict( path::String )
         empty       = false,                         # Defaults to false. Empty the bucket if it exists.
         gzip        = false
     )
-    GSDict( kvStore, bucketName, keyPrefix )
+    GSDict( kvStore, bucketName, keyPrefix, googleSession )
 end
 
 function Base.delete!( d::GSDict, key::String )
+	authorize( d.googleSession )
+    # authorize( d.kvStore.session )
     delete!( d.kvStore, joinpath(d.keyPrefix, key) )
 end
 
-# function Base.reset!( d::GSDict )
-#     reset!(d.kvStore)
-# end
-
 function Base.setindex!( d::GSDict, value::Any, key::String )
+	authorize( d.googleSession )
+    # authorize( d.kvStore.session )
     d.kvStore[joinpath(d.keyPrefix, key)] = value
 end
 
 function Base.getindex( d::GSDict, key::String)
+	authorize( d.googleSession )
     d.kvStore[joinpath(d.keyPrefix, key)]
 end
 
@@ -63,6 +65,7 @@ function Base.keys( d::GSDict )
     #     keyList[i] = joinpath(d.keyPrefix, keyList[i])
     # end
     # @show keyList
+	authorize(d.googleSession)
     ds = storage(:Object, :list, d.bucketName; prefix=d.keyPrefix, fields="items(name)")
     ret = Vector{String}()
     for i in eachindex(ds)
@@ -76,6 +79,7 @@ end
 
 function get_config_dict( d::GSDict )
     # str = gsread( "gs://$(d.bucketName)/$(d.keyPrefix)/$(DEFAULT_CONFIG_FILENAME)" )
+	authorize(d.googleSession; cache=true)
     storage(:Object, :get, d.bucketName,
                 joinpath(d.keyPrefix, DEFAULT_CONFIG_FILENAME));
     # @show ret
