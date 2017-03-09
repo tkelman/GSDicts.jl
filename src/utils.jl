@@ -27,21 +27,22 @@ function get_config_dict( d::GSDict )
     dir = dirname( keyPrefix )
     infoDict = storage(:Object, :get, d.bucketName,
                         joinpath(dir, DEFAULT_CONFIG_FILENAME))
-    for d in infoDict["scales"]
-        if d["key"] == k
-            if infoDict["num_channels"] == 1
-                chunkSize   = d["chunk_sizes"][1]
+    @show infoDict
+    configDict = Dict{Symbol, Any}(
+        :dataType => DATATYPE_MAP[ infoDict[:data_type] ]
+    )
+    for d in infoDict[:scales]
+        if d[:key] == k
+            if infoDict[:num_channels] == 1
+                configDict[:chunkSize] = d[:chunk_sizes][1]
             else
-                chunkSize   = [d["chunk_sizes"][1]..., infoDict["num_channels"]]
+                configDict[:chunkSize] = [d[:chunk_sizes][1]..., infoDict[:num_channels]]
             end
-            encoding    = d["encoding"]
-            totalSize   = d["size"]
-            offset      = d["voxel_offset"]
+            configDict[:coding]     = d[:encoding]
+            configDict[:totalSize]  = d[:size]
+            configDict[:offset]     = d[:voxel_offset]
         end
     end
-
-    configDict = Dict(
-        "chunkSize"     => chunkSize,
-        "dataType"      => DATATYPE_MAP[ infoDict["data_type"] ]
-    )
+    @show configDict
+    return configDict
 end
