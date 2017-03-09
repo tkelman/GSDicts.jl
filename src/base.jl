@@ -4,25 +4,17 @@ export GSDict, get_config_dict
 
 const DEFAULT_CREDENTIAL_FILENAME = expanduser("~/.google_credentials.json")
 # const DEFAULT_CREDENTIAL = GoogleCredentials(expanduser("~/credentials.json"))
-const DEFAULT_CONFIG_FILENAME = "config.json"
+const DEFAULT_GZIP = true
+const DEFAULT_VALUE_FORMAT = :identity
 
 immutable GSDict <: Associative
     kvStore     	::KeyStore
     bucketName  	::String
     keyPrefix   	::String
-	googleSession	::GoogleCloud.session.GoogleSession 
+    googleSession	::GoogleCloud.session.GoogleSession
 end
 
-"""
-    split gs path to bucket name and key
-"""
-function splitgs( path::String )
-    path = replace(path, "gs://", "")
-    bucketName, key = split(path, "/", limit=2)
-    return String(bucketName), String(key)
-end
-
-function GSDict( path::String )
+function GSDict( path::String; gzip = DEFAULT_GZIP )
     bucketName, keyPrefix = splitgs(path)
 
     bucketName = replace(bucketName, "gs://", "")
@@ -30,12 +22,12 @@ function GSDict( path::String )
 
     googleSession = GoogleSession(expanduser(DEFAULT_CREDENTIAL_FILENAME), ["devstorage.full_control"])
     kvStore = KeyStore{String, Vector{UInt8}}(
-        bucketName,                                  # Key-value store name. Created if it doesn't already exist.
+        bucketName,             # Key-value store name. Created if it doesn't already exist.
         googleSession;
-	key_format  = :string,
-	val_format  = :julia,
-        empty       = false,                         # Defaults to false. Empty the bucket if it exists.
-        gzip        = false
+        key_format  = :string,
+        val_format  = :identity,
+        empty       = false,    # Defaults to false. Empty the bucket if it exists.
+        gzip        = gzip
     )
     GSDict( kvStore, bucketName, keyPrefix, googleSession )
 end
@@ -74,23 +66,3 @@ function Base.keys( d::GSDict )
     end
     return ret
 end
-
-function get_config_dict( d::GSDict )
-    # str = gsread( "gs://$(d.bucketName)/$(d.keyPrefix)/$(DEFAULT_CONFIG_FILENAME)" )
-	authorize(d.googleSession; cache=true)
-    storage(:Object, :get, d.bucketName,
-                joinpath(d.keyPrefix, DEFAULT_CONFIG_FILENAME));
-    # @show ret
-    # @show joinpath(d.keyPrefix, DEFAULT_CONFIG_FILENAME)
-    # @show d
-    # # JSON.parse( str, dicttype=Dict{Symbol, Any} )
-    # return ret
-end
-
-function serialize_to_uint8_vector(x)
-    io = IOBuffer()
-    serialize(io, x)
-    takebuf_array(io)
-end
-
-deserialize_from_vector(x) = deserialize(IOBuffer(x))
