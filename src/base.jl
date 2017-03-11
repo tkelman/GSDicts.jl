@@ -59,10 +59,8 @@ function Base.keys( d::GSDict )
     ds = storage(:Object, :list, d.bucketName; prefix=d.keyPrefix, fields="items(name)")
     ret = Vector{String}()
     for i in eachindex(ds)
-        if !contains( ds[i][:name], DEFAULT_CONFIG_FILENAME)
-            ds[i][:name] = replace(ds[i][:name], "$(d.keyPrefix)/", "" )
-            push!(ret, ds[i][:name])
-        end
+        chunkFileName = replace(ds[i][:name], "$(rstrip(d.keyPrefix, '/'))/", "" )
+        push!(ret, chunkFileName)
     end
     return ret
 end
