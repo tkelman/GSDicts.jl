@@ -29,7 +29,7 @@ function get_config_dict( d::GSDict )
     k = basename( keyPrefix )
     dir = dirname( keyPrefix )
     infoDict = storage(:Object, :get, d.bucketName,
-                        joinpath(dir, DEFAULT_CONFIG_FILENAME))
+                        joinpath("gs://", d.bucketName, dir, DEFAULT_CONFIG_FILENAME))
     @show infoDict
     # transform the key type to Symbol
     infoDict = key2symbol( infoDict )
