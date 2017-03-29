@@ -8,6 +8,7 @@ using JSON
 # support some internal compression
 using ImageMagick
 
+include("types.jl")
 include("base.jl")
 include("utils.jl")
 

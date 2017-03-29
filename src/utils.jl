@@ -1,5 +1,4 @@
-
-const DEFAULT_CONFIG_FILENAME = "info"
+import BigArrays: get_config_dict
 
 # map datatype of python to Julia
 const DATATYPE_MAP = Dict{String, String}(
@@ -19,19 +18,52 @@ function splitgs( path::String )
     return String(bucketName), String(key)
 end
 
-
 function get_config_dict( d::GSDict )
-    # str = gsread( "gs://$(d.bucketName)/$(d.keyPrefix)/$(DEFAULT_CONFIG_FILENAME)" )
-	authorize(d.googleSession; cache=true)
-    # configDict = storage(:Object, :get, d.bucketName,
-    #                     joinpath(d.keyPrefix, configFileName));
-    keyPrefix = rstrip(d.keyPrefix,'/')
+    return d.configDict
+end
+
+function get_config_dict_from_ND(
+    googleSession   ::GoogleCloud.session.GoogleSession,
+    bucketName      ::String,
+    keyPrefix       ::String)
+    # str = gsread( "gs://$(bucketName)/$(d.keyPrefix)/$(DEFAULT_CONFIG_FILENAME)" )
+	authorize(googleSession; cache=true)
+    storage(:Object, :get, bucketName,
+                joinpath(keyPrefix, "config.json"));
+    # @show ret
+    # @show joinpath(keyPrefix, DEFAULT_CONFIG_FILENAME)
+    # @show d
+    # # JSON.parse( str, dicttype=Dict{Symbol, Any} )
+    # return ret
+end
+
+
+function hasinfo(googleSession::GoogleCloud.session.GoogleSession,
+            bucketName      ::String,
+            keyPrefix       ::String)
+    authorize(googleSession; cache=true)
+    keyPrefix = rstrip(keyPrefix,'/')
     k = basename( keyPrefix )
-    dir = dirname( keyPrefix )                       
-    @show  joinpath("gs://", d.bucketName, dir, DEFAULT_CONFIG_FILENAME)
- 
-    infoDict = storage(:Object, :get, d.bucketName,
-                        joinpath(dir, DEFAULT_CONFIG_FILENAME))
+    dir = dirname( keyPrefix )
+    infoDict = storage(:Object, :get, bucketName,
+                        joinpath(dir, "info"))
+    return haskey(infoDict, :code) && infoDict[:code] == 404
+end
+
+function get_config_dict_from_neuroglancer(
+            googleSession   ::GoogleCloud.session.GoogleSession,
+            bucketName      ::String,
+            keyPrefix       ::String,
+             )
+    # str = gsread( "gs://$(bucketName)/$(keyPrefix)/$(DEFAULT_CONFIG_FILENAME)" )
+	authorize(googleSession; cache=true)
+    # configDict = storage(:Object, :get, bucketName,
+    #                     joinpath(keyPrefix, configFileName));
+    keyPrefix = rstrip(keyPrefix,'/')
+    k = basename( keyPrefix )
+    dir = dirname( keyPrefix )
+    infoDict = storage(:Object, :get, bucketName,
+                        joinpath(dir, "info"))
     @show infoDict
     # transform the key type to Symbol
     infoDict = key2symbol( infoDict )

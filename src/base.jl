@@ -1,36 +1,6 @@
-import BigArrays: get_config_dict
-
-export GSDict, get_config_dict
-
 const DEFAULT_CREDENTIAL_FILENAME = expanduser("~/.google_credentials.json")
 # const DEFAULT_CREDENTIAL = GoogleCredentials(expanduser("~/credentials.json"))
-const DEFAULT_GZIP = true
 const DEFAULT_VALUE_FORMAT = :identity
-
-immutable GSDict <: Associative
-    kvStore     	::KeyStore
-    bucketName  	::String
-    keyPrefix   	::String
-    googleSession	::GoogleCloud.session.GoogleSession
-end
-
-function GSDict( path::String; gzip = DEFAULT_GZIP )
-    bucketName, keyPrefix = splitgs(path)
-
-    bucketName = replace(bucketName, "gs://", "")
-    keyPrefix = keyPrefix[end]=="/" ? keyPrefix[1:end-1] : keyPrefix
-
-    googleSession = GoogleSession(expanduser(DEFAULT_CREDENTIAL_FILENAME), ["devstorage.full_control"])
-    kvStore = KeyStore{String, Vector{UInt8}}(
-        bucketName,             # Key-value store name. Created if it doesn't already exist.
-        googleSession;
-        key_format  = :string,
-        val_format  = :identity,
-        empty       = false,    # Defaults to false. Empty the bucket if it exists.
-        gzip        = gzip
-    )
-    GSDict( kvStore, bucketName, keyPrefix, googleSession )
-end
 
 function Base.delete!( d::GSDict, key::String )
 	authorize( d.googleSession )
