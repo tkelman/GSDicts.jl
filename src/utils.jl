@@ -37,17 +37,23 @@ function get_config_dict_from_ND(
     # return ret
 end
 
-
-function hasinfo(googleSession::GoogleCloud.session.GoogleSession,
+function getinfo(googleSession::GoogleCloud.session.GoogleSession,
             bucketName      ::String,
             keyPrefix       ::String)
     authorize(googleSession; cache=true)
     keyPrefix = rstrip(keyPrefix,'/')
     k = basename( keyPrefix )
     dir = dirname( keyPrefix )
-    infoDict = storage(:Object, :get, bucketName,
+    @show joinpath(dir, "info")
+    storage(:Object, :get, bucketName,
                         joinpath(dir, "info"))
-    return haskey(infoDict, :code) && infoDict[:code] == 404
+end
+
+function hasinfo(googleSession::GoogleCloud.session.GoogleSession,
+            bucketName      ::String,
+            keyPrefix       ::String)
+    infoDict = getinfo( googleSession, bucketName, keyPrefix )
+    return isa(infoDict, String)
 end
 
 function get_config_dict_from_neuroglancer(

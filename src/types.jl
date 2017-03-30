@@ -9,9 +9,6 @@ immutable GSDict <: Associative
     keyPrefix   	::String
     googleSession	::GoogleCloud.session.GoogleSession
     configDict      ::Dict{Symbol, Any}
-    # function (::Type{GSDict}){B}(
-    #     kvStore     ::
-    #     )
 end
 
 """
