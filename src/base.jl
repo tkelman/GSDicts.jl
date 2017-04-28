@@ -16,7 +16,12 @@ end
 
 function Base.getindex( d::GSDict, key::String)
 	authorize( d.googleSession )
-    d.kvStore[joinpath(d.keyPrefix, key)]
+    try 
+        return d.kvStore[joinpath(d.keyPrefix, key)]
+    catch e 
+        println("no such key in Google Cloud Storage: $(e), will fill with zeros")
+        throw(ZeroChunkException)
+    end
 end
 
 function Base.keys( d::GSDict )

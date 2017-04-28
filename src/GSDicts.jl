@@ -7,6 +7,7 @@ using GoogleCloud.Utils.Storage
 using JSON
 # support some internal compression
 using ImageMagick
+import BigArrays: get_config_dict, ZeroChunkException
 
 include("types.jl")
 include("base.jl")

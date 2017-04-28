@@ -1,4 +1,3 @@
-import BigArrays: get_config_dict
 
 # map datatype of python to Julia
 const DATATYPE_MAP = Dict{String, String}(
