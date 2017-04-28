@@ -20,7 +20,7 @@ function Base.getindex( d::GSDict, key::String)
         return d.kvStore[joinpath(d.keyPrefix, key)]
     catch e 
         println("no such key in Google Cloud Storage: $(e), will fill with zeros")
-        throw(ZeroChunkException)
+        throw(ZeroChunkException())
     end
 end
 
