@@ -43,7 +43,7 @@ function getinfo(googleSession::GoogleCloud.session.GoogleSession,
     keyPrefix = rstrip(keyPrefix,'/')
     k = basename( keyPrefix )
     dir = dirname( keyPrefix )
-    @show joinpath(dir, "info")
+    @show joinpath(bucketName, dir, "info")
     storage(:Object, :get, bucketName,
                         joinpath(dir, "info"))
 end
@@ -52,7 +52,8 @@ function hasinfo(googleSession::GoogleCloud.session.GoogleSession,
             bucketName      ::String,
             keyPrefix       ::String)
     infoDict = getinfo( googleSession, bucketName, keyPrefix )
-    return isa(infoDict, String)
+    @show infoDict
+    return isa(infoDict, String) || isa(infoDict, Dict)
 end
 
 function get_config_dict_from_neuroglancer(
