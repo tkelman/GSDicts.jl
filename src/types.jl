@@ -1,7 +1,7 @@
 export GSDict, GSDictsNDFormat, GSDictsNeuroglancerFormat
 
 const DEFAULT_FORMAT = :ND
-const DEFAULT_GZIP = false
+const DEFAULT_GZIP = true
 
 immutable GSDict <: Associative
     kvStore     	::KeyStore
