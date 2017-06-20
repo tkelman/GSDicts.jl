@@ -5,8 +5,6 @@ module GSDicts
 using GoogleCloud
 using GoogleCloud.Utils.Storage
 using JSON
-# support some internal compression
-using ImageMagick
 #import BigArrays: get_config_dict, NoSuchKeyException
 
 include("types.jl")
