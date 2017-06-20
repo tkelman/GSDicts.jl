@@ -1,6 +1,12 @@
 using GSDicts
 
-kv  = GSDict("gs://jpwu/test.bigarray.img")
+if isfile(joinpath(@__FILE__,"../.google_credentials.json"))
+    credentialFileName = joinpath(@__FILE__,"../.google_credentials.json")
+else 
+    credentialFileName = GSDicts.DEFAULT_CREDENTIAL_FILENAME
+end
+
+kv  = GSDict("gs://jpwu/test.bigarray.img"; credentialFileName = credentialFileName)
 
 a = rand(UInt8, 50)
 

@@ -1,3 +1,5 @@
+const DEFAULT_CREDENTIAL_FILENAME = expanduser("~/.google_credentials.json")
+
 export GSDict, GSDictsNDFormat, GSDictsNeuroglancerFormat
 
 const DEFAULT_FORMAT = :ND
@@ -16,13 +18,12 @@ end
 construct an associative datastructure based on Google Cloud Storage
 format: :ND | :Neuroglancer
 """
-function GSDict( path::String; gzip::Bool = DEFAULT_GZIP )
+function GSDict( path::String; gzip::Bool = DEFAULT_GZIP, credentialFileName = DEFAULT_CREDENTIAL_FILENAME )
     bucketName, keyPrefix = splitgs(path)
-
     bucketName = replace(bucketName, "gs://", "")
     keyPrefix = keyPrefix[end]=="/" ? keyPrefix[1:end-1] : keyPrefix
 
-    googleSession = GoogleSession(expanduser(DEFAULT_CREDENTIAL_FILENAME), ["devstorage.full_control"])
+    googleSession = GoogleSession( credentialFileName, ["devstorage.full_control"])
     kvStore = KeyStore{String, Vector{UInt8}}(
         bucketName,             # Key-value store name. Created if it doesn't already exist.
         googleSession;

@@ -53,8 +53,8 @@ function hasinfo(googleSession::GoogleCloud.session.GoogleSession,
             bucketName      ::String,
             keyPrefix       ::String)
     infoDict = getinfo( googleSession, bucketName, keyPrefix )
-    @show infoDict
-    return isa(infoDict, String) || isa(infoDict, Dict)
+    @show typeof(infoDict)
+    return isa(infoDict, String) || (isa(infoDict, Dict) && !haskey(infoDict, :error))
 end
 
 function get_config_dict_from_neuroglancer(
@@ -76,7 +76,6 @@ function get_config_dict_from_neuroglancer(
     infoDict = key2symbol( infoDict )
 
     @show infoDict
-    @show DATATYPE_MAP[ infoDict[:data_type] ]
     configDict = Dict{Symbol, Any}(
         :dataType => DATATYPE_MAP[ infoDict[:data_type] ]
     )

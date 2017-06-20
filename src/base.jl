@@ -1,5 +1,3 @@
-const DEFAULT_CREDENTIAL_FILENAME = expanduser("~/.google_credentials.json")
-# const DEFAULT_CREDENTIAL = GoogleCredentials(expanduser("~/credentials.json"))
 const DEFAULT_VALUE_FORMAT = :identity
 
 function Base.delete!( d::GSDict, key::String )
