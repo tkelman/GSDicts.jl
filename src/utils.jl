@@ -1,4 +1,3 @@
-
 # map datatype of python to Julia
 const DATATYPE_MAP = Dict{String, String}(
     "uint8"     => "UInt8",
@@ -16,10 +15,6 @@ function splitgs( path::String )
     path = replace(path, "gs://", "")
     bucketName, key = split(path, "/", limit=2)
     return String(bucketName), String(key)
-end
-
-function get_config_dict( d::GSDict )
-    return d.configDict
 end
 
 function get_config_dict_from_ND(
