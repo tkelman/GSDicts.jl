@@ -3,9 +3,8 @@ os:
     - linux
 julia:
     - 0.5
-
 notifications:
-    email: false
+  email: false
 git:
   depth: 999999
 
