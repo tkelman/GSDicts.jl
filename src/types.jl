@@ -1,7 +1,18 @@
-const DEFAULT_CREDENTIAL_FILENAME = expanduser("~/.google_credentials.json")
+
+function get_credential_filename()
+    if isfile(expanduser("~/.google_credentials.json"))
+        DEFAULT_CREDENTIAL_FILENAME = expanduser("~/.google_credentials.json")
+    elseif isfile(joinpath(dirname(@__FILE__), ".google_credentials.json"))
+        DEFAULT_CREDENTIAL_FILENAME = joinpath(dirname(@__FILE__), ".google_credentials.json")
+    else
+        warn("credential file is not in default place!")
+    end
+    return DEFAULT_CREDENTIAL_FILENAME
+end
 
 export GSDict, GSDictsNDFormat, GSDictsNeuroglancerFormat
 
+const DEFAULT_CREDENTIAL_FILENAME = get_credential_filename()
 const DEFAULT_FORMAT = :ND
 const DEFAULT_GZIP = true
 

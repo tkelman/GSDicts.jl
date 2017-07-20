@@ -1,15 +1,17 @@
 module StorageUtil
 using GoogleCloud
 
+import ..GSDicts.get_credential_filename
+
 export create_bucket, delete_bucket
-export delete_object
-export isgspath, gspath2bkt_key, gsread, gssave
+export delete_object, isgspath, gspath2bkt_key, gsread, gssave
 
 """
 setup credential session
 """
 function __init__()
-    creds = GoogleCredentials(expanduser("~/.google_credentials.json"))
+    const DEFAULT_CREDENTIAL_FILENAME = get_credential_filename()
+    creds = GoogleCredentials( DEFAULT_CREDENTIAL_FILENAME )
     session = GoogleSession(creds, ["devstorage.full_control"])
     set_session!(storage, session)    # storage is the API root, exported from GoogleCloud.jl
 end
