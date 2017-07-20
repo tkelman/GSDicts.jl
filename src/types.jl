@@ -2,7 +2,7 @@
 function get_credential_filename()
     if isfile(expanduser("~/.google_credentials.json"))
         DEFAULT_CREDENTIAL_FILENAME = expanduser("~/.google_credentials.json")
-    elseif isfile(joinpath(dirname(@__FILE__), ".google_credentials.json"))
+    elseif isfile(joinpath(dirname(@__FILE__), "../.google_credentials.json"))
         DEFAULT_CREDENTIAL_FILENAME = joinpath(dirname(@__FILE__), ".google_credentials.json")
     else
         warn("credential file is not in default place!")
