@@ -12,7 +12,6 @@ git:
 before_install:
     - pwd
     - openssl aes-256-cbc -K $encrypted_44514ba1fcac_key -iv $encrypted_44514ba1fcac_iv -in .google_credentials.json.enc -out ../../../.google_credentials.json -d
-    - julia -e 'Pkg.clone("https://github.com/jingpengw/GoogleCloud.jl.git")'
 
 script:
     - julia -e 'Pkg.clone(pwd()); Pkg.test("GSDicts")'

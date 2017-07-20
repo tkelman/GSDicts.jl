@@ -14,12 +14,7 @@ end
 
 function Base.getindex( d::GSDict, key::String)
 	authorize( d.googleSession )
-    try 
-        return d.kvStore[joinpath(d.keyPrefix, key)]
-    catch e 
-        println("no such key in Google Cloud Storage: $(e), will fill with zeros")
-        throw(NoSuchKeyException())
-    end
+    return d.kvStore[joinpath(d.keyPrefix, key)]
 end
 
 function Base.keys( d::GSDict )
@@ -36,4 +31,8 @@ function Base.keys( d::GSDict )
         push!(ret, chunkFileName)
     end
     return ret
+end
+
+function Base.haskey( d::GSDict, key::String )
+    haskey(d.kvStore, joinpath(d.keyPrefix, key))
 end
